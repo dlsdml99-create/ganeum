@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/%EC%95%B1%20%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C-Android-13704f?style=for-the-badge&logo=android&logoColor=white" alt="앱 다운로드" height="48">
   </a>
 </p>
-<p align="center">버튼을 누르면 ganeum.apk가 바로 받아져요 · 안드로이드 7.0 이상 · 무료 · 광고 없음<br>📄 <a href="https://dlsdml99-create.github.io/ganeum/">소개 페이지</a> · 💻 <a href="https://dlsdml99-create.github.io/ganeum/app.html">아이폰·PC는 웹으로 써보기</a></p>
+<p align="center">버튼을 누르면 ganeum.apk가 바로 받아져요 · 안드로이드 7.0 이상 · 무료 · 광고 없음<br>📖 <a href="https://dlsdml99-create.github.io/ganeum/">다운로드·사용 설명서 페이지</a> · 💻 <a href="https://dlsdml99-create.github.io/ganeum/app.html">아이폰·PC는 웹으로 써보기</a></p>
 
 ---
 
