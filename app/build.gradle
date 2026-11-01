@@ -1,0 +1,38 @@
+plugins { id 'com.android.application' }
+// 버전 번호는 GitHub에서 빌드한 횟수로 자동으로 올라감 (v1.1, v1.2 …)
+def run = (System.getenv('RUN_NUMBER') ?: '1').toInteger()
+android {
+    namespace 'com.ganeum.calc'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.ganeum.calc'
+        minSdk 24
+        targetSdk 34
+        versionCode run
+        versionName "1.${run}"
+    }
+    signingConfigs {
+        fixed {
+            // 비밀번호는 GitHub 비밀값(GANEUM_SIGNING)에서 빌드할 때만 꺼내 씀
+            storeFile file(System.getenv('KEYSTORE') ?: 'none.jks')
+            storePassword System.getenv('KEY_PASS') ?: ''
+            keyAlias 'ganeum'
+            keyPassword System.getenv('KEY_PASS') ?: ''
+        }
+    }
+    buildTypes {
+        // 배포용: 안 쓰는 코드·리소스를 지워 용량을 줄임
+        release {
+            signingConfig signingConfigs.fixed
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    lint { checkReleaseBuilds false; abortOnError false }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+// 외부 라이브러리 없음 (안드로이드 기본 기능만 사용 → 용량 최소)
