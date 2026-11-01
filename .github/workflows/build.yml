@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pages: write
+  id-token: write
 concurrency: { group: build, cancel-in-progress: false }
 jobs:
   build:
@@ -55,3 +57,15 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A && git commit -q -m "다운로드 페이지 v1.$N"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
+          rm -rf .git
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  # Pages 설정을 'GitHub Actions'로 켜 둔 경우 여기서 바로 올라감 (gh-pages 방식이면 위에서 이미 올라감)
+  pages:
+    needs: build
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    environment: { name: github-pages, url: '${{ steps.deploy.outputs.page_url }}' }
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
