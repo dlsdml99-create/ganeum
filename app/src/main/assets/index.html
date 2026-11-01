@@ -326,7 +326,8 @@ const NATIVE = typeof window.Android === 'object' && window.Android ? window.And
 const APP = { name: '가늠', version: '1.1.0', label: 'v1.1', updateUrl: '', preview: !NATIVE && !/github\.io$/.test(location.hostname), shareBase: 'https://dlsdml99-create.github.io/ganeum/' };
 try { const v = NATIVE && NATIVE.version(); if (v && /^\d+(\.\d+)*$/.test(v)) { APP.version = v; APP.label = 'v' + v; } } catch (e) { /* 웹 */ }
 const NOTES = [
-  { v: 'v1.1', d: '2026.11.01', items: ['식 속 숫자를 눌러 그 숫자만 고치기, 결과 위 식을 눌러 다시 고치기', '괄호 ( ) 키', '프리셋 묶음 5가지: 여행·쇼핑·부동산·금융·직장인', '프리셋 공유: 카톡으로 보내면 받은 사람이 눌러서 바로 넣기'] },
+  { v: 'v1.3', d: '2026.11.01', items: ['처음 열 때 예시 숫자 없이 빈 화면으로 시작'] },
+  { v: 'v1.2', d: '2026.11.01', items: ['식 속 숫자를 눌러 그 숫자만 고치기, 결과 위 식을 눌러 다시 고치기', '괄호 ( ) 키', '프리셋 묶음 5가지: 여행·쇼핑·부동산·금융·직장인', '프리셋 공유: 카톡으로 보내면 받은 사람이 눌러서 바로 넣기'] },
   { v: 'v1.0', d: '2026.10.31', items: ['계산기, 환율, 계산식 프리셋', '같은 계산을 3번 하면 자주 쓰는 계산으로 자동 추천', '환율 자동 업데이트, 인터넷이 없으면 저장된 환율로 계산'] }
 ];
 const STORE = 'ganeum-v1';
@@ -748,8 +749,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
 function defaults() {
   return {
     v: 1, tab: 'calc',
-    calc: { expr: '38700', done: true, prev: { e: '12900*3' } },
-    fx: { list: ['KRW', 'USD', 'JPY', 'EUR', 'CNY'], active: 'USD', expr: '100', done: true },
+    calc: { expr: '', done: false, prev: null },
+    fx: { list: ['KRW', 'USD', 'JPY', 'EUR', 'CNY'], active: 'USD', expr: '', done: false },
     cx: { on: true, from: 'KRW', to: 'USD' },
     rates: { r: clone(RATE_SNAPSHOT.r), at: RATE_SNAPSHOT.at, src: RATE_SNAPSHOT.src, got: 0 },
     presets: clone(BUILTIN), learned: {}, hist: [], upd: 0
@@ -781,6 +782,8 @@ function load() {
     if (s.learned && typeof s.learned === 'object') o.learned = s.learned;
     if (Array.isArray(s.hist)) o.hist = s.hist.filter(h => h && typeof h.r === 'number').slice(-60);
     if (typeof s.upd === 'number') o.upd = s.upd;
+    if (o.calc.expr === '38700' && o.calc.prev && o.calc.prev.e === '12900*3') o.calc = { expr: '', done: false, prev: null };
+    if (o.fx.expr === '100' && o.fx.done && o.fx.active === 'USD') { o.fx.expr = ''; o.fx.done = false; }
   } catch (e) { return defaults(); }
   return o;
 }
