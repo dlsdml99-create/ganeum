@@ -97,6 +97,8 @@ input{font:inherit;color:inherit;margin:0}
 /* 탭 바 — 좌측 하단 버전 */
 .tabs{display:grid;grid-template-columns:44px repeat(3,minmax(0,1fr)) 44px;height:58px;border-top:1px solid var(--line);background:var(--paper)}
 .ver{align-self:end;justify-self:start;padding:0 4px 9px 0;font-family:var(--num);font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--ink-3)}
+.ver.new{color:#F5B400;font-weight:800;text-shadow:0 0 1px rgba(0,0,0,.35)}
+.vtag.up{background:rgba(245,180,0,.18)!important;color:#F5B400!important}.upv{color:#F5B400}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;color:var(--ink-3)}
 .tab svg{width:23px;height:23px}
 .tab[aria-current="page"]{color:var(--jade);font-weight:700}
@@ -326,6 +328,7 @@ const NATIVE = typeof window.Android === 'object' && window.Android ? window.And
 const APP = { name: '가늠', version: '1.1.0', label: 'v1.1', updateUrl: '', preview: !NATIVE && !/github\.io$/.test(location.hostname), shareBase: 'https://dlsdml99-create.github.io/ganeum/' };
 try { const v = NATIVE && NATIVE.version(); if (v && /^\d+(\.\d+)*$/.test(v)) { APP.version = v; APP.label = 'v' + v; } } catch (e) { /* 웹 */ }
 const NOTES = [
+  { v: 'v1.4', d: '2026.11.01', items: ['새 버전이 나오면 왼쪽 아래 버전 글씨가 노란색으로 바뀌어요', '버전 정보 창을 다른 앱들과 같은 모양으로 맞췄어요'] },
   { v: 'v1.3', d: '2026.11.01', items: ['처음 열 때 예시 숫자 없이 빈 화면으로 시작'] },
   { v: 'v1.2', d: '2026.11.01', items: ['식 속 숫자를 눌러 그 숫자만 고치기, 결과 위 식을 눌러 다시 고치기', '괄호 ( ) 키', '프리셋 묶음 5가지: 여행·쇼핑·부동산·금융·직장인', '프리셋 공유: 카톡으로 보내면 받은 사람이 눌러서 바로 넣기'] },
   { v: 'v1.0', d: '2026.10.31', items: ['계산기, 환율, 계산식 프리셋', '같은 계산을 3번 하면 자주 쓰는 계산으로 자동 추천', '환율 자동 업데이트, 인터넷이 없으면 저장된 환율로 계산'] }
@@ -1517,7 +1520,13 @@ function sheetCurrencies() {
 
 /* 앱: 폰이 GitHub에서 확인한 최신 버전 번호를 알려줌 */
 const LATEST = { v: 0, cur: 0 };
-window.onLatest = (v, cur) => { LATEST.v = +v || 0; LATEST.cur = +cur || 0; };
+const hasNew = () => !!(LATEST.v && LATEST.v > LATEST.cur);
+/* 새 버전이 있으면 왼쪽 아래 버전 글씨를 노란색으로 */
+function paintVer() {
+  el.ver.classList.toggle('new', hasNew());
+  el.ver.setAttribute('aria-label', hasNew() ? `버전 ${APP.label}, 새 버전 v1.${LATEST.v}이 나왔어요` : '버전 정보와 업데이트 내용');
+}
+window.onLatest = (v, cur) => { LATEST.v = +v || 0; LATEST.cur = +cur || 0; paintVer(); };
 /* 앱: 뒤로 가기 키 — 창을 닫고, 다른 탭이면 계산기로, 아니면 앱 종료 */
 window.onBackKey = () => {
   if (sheetOpen) { closeSheet(); return true; }
@@ -1528,7 +1537,7 @@ window.onBackKey = () => {
 window.onSharedText = t => { if (decPreset(String(t || ''))) sheetImport(String(t)); else toast('가늠 프리셋 링크가 아니에요'); };
 function sheetVersion() {
   openSheet(`<div class="grab"></div>
-    <div class="shead"><div><h2>${APP.name}<span class="vtag">${APP.label}</span></h2><p class="hint" id="updMsg">${NATIVE ? (LATEST.v && LATEST.v > LATEST.cur ? `새 버전 v1.${LATEST.v}이 나왔어요.` : LATEST.v ? '지금 쓰는 버전이 최신이에요.' : '새 버전이 나오면 앱을 열 때 알려드려요.') : APP.preview ? '미리보기 버전이에요. 설치용 앱에서는 새 버전이 나오면 여기서 바로 받을 수 있어요.' : '웹 버전이에요. 안드로이드 앱은 다운로드 페이지에서 받을 수 있어요.'}</p>${NATIVE ? '<button class="btn sec sm" type="button" id="updBtn" style="margin-top:10px">새 버전 확인</button>' : ''}</div>${CLOSE}</div>
+    <div class="shead"><div><h2>${APP.name}<span class="vtag${hasNew() ? ' up' : ''}">${APP.label}</span></h2><p class="hint" id="updMsg">${NATIVE ? (hasNew() ? `새 버전 <b class="upv">v1.${LATEST.v}</b>이 나왔어요.` : LATEST.v ? '지금 쓰는 버전이 최신이에요.' : '새 버전이 나오면 앱을 열 때 알려드려요.') : APP.preview ? '미리보기 버전이에요. 설치용 앱에서는 새 버전이 나오면 여기서 바로 받을 수 있어요.' : '웹 버전이에요. 안드로이드 앱은 다운로드 페이지에서 받을 수 있어요.'}</p>${NATIVE ? '<button class="btn sec sm" type="button" id="updBtn" style="margin-top:10px">새 버전 확인</button>' : ''}</div>${CLOSE}</div>
     <p class="lbl">업데이트 내용</p>
     <ul class="notes">${NOTES.map(n => `<li><b>${esc(n.v)}</b><span>${esc(n.d)}</span><ul>${n.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul></li>`).join('')}</ul>
     <p class="lbl">개인정보</p>
