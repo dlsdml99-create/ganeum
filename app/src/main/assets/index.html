@@ -329,6 +329,7 @@ const NATIVE = typeof window.Android === 'object' && window.Android ? window.And
 const APP = { name: '가늠', version: '1.1.0', label: 'v1.1', updateUrl: '', preview: !NATIVE && !/github\.io$/.test(location.hostname), shareBase: 'https://dlsdml99-create.github.io/ganeum/' };
 try { const v = NATIVE && NATIVE.version(); if (v && /^\d+(\.\d+)*$/.test(v)) { APP.version = v; APP.label = 'v' + v; } } catch (e) { /* 웹 */ }
 const NOTES = [
+  { v: 'v1.7', d: '2026.11.05', items: ['내 데이터 백업: 계산 기록·프리셋·통화 목록을 파일로 저장했다가 새 폰에서 불러오기 (왼쪽 아래 버전)'] },
   { v: 'v1.6', d: '2026.11.01', items: ['환율 탭에도 복사 버튼: "100 USD = 133,804원 = 15,788 JPY"처럼 한 번에 복사'] },
   { v: 'v1.5', d: '2026.11.01', items: ['16자리가 넘는 아주 큰 수도 끝자리까지 정확하게 계산해요 (99,999,999×99,999,999 = 9,999,999,800,000,001)', '계산 기록을 꾹 누르면 그 계산을 프리셋으로 바로 저장해요'] },
   { v: 'v1.4', d: '2026.11.01', items: ['새 버전이 나오면 왼쪽 아래 버전 글씨가 노란색으로 바뀌어요', '버전 정보 창을 다른 앱들과 같은 모양으로 맞췄어요'] },
@@ -840,8 +841,10 @@ function load() {
 }
 const S = load();
 let saveTimer = 0;
+let bkLock = false;
 function flush() {
   clearTimeout(saveTimer);
+  if (bkLock) return;
   try { const c = Object.assign({}, S, { calc: Object.assign({}, S.calc, { err: undefined }) }); localStorage.setItem(STORE, JSON.stringify(c)); } catch (e) { /* 저장 불가한 환경 */ }
 }
 function save() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 250); }
@@ -1598,8 +1601,11 @@ function sheetVersion() {
     <div class="shead"><div><h2>${APP.name}<span class="vtag${hasNew() ? ' up' : ''}">${APP.label}</span></h2><p class="hint" id="updMsg">${NATIVE ? (hasNew() ? `새 버전 <b class="upv">v1.${LATEST.v}</b>이 나왔어요.` : LATEST.v ? '지금 쓰는 버전이 최신이에요.' : '새 버전이 나오면 앱을 열 때 알려드려요.') : APP.preview ? '미리보기 버전이에요. 설치용 앱에서는 새 버전이 나오면 여기서 바로 받을 수 있어요.' : '웹 버전이에요. 안드로이드 앱은 다운로드 페이지에서 받을 수 있어요.'}</p>${NATIVE ? '<button class="btn sec sm" type="button" id="updBtn" style="margin-top:10px">새 버전 확인</button>' : ''}</div>${CLOSE}</div>
     <p class="lbl">업데이트 내용</p>
     <ul class="notes">${NOTES.map(n => `<li><b>${esc(n.v)}</b><span>${esc(n.d)}</span><ul>${n.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul></li>`).join('')}</ul>
+    <p class="lbl">내 데이터 백업</p>
+    <div id="bkBox">${bkHTML()}</div>
     <p class="lbl">개인정보</p>
-    <p class="hint">계산 기록과 프리셋은 이 기기에만 저장돼요. 인터넷은 환율을 받고 새 버전을 확인할 때만 써요.</p>`, sh => {
+    <p class="hint">계산 기록과 프리셋은 이 기기에만 저장돼요. 백업 파일은 내가 고른 곳에만 저장되고 인터넷으로 보내지 않아요. 인터넷은 환율을 받고 새 버전을 확인할 때만 써요.</p>`, sh => {
+    bkMount(sh);
     const ub = $('#updBtn', sh);
     if (ub) ub.addEventListener('click', () => { try { NATIVE.openUpdate(); } catch (e) { /* 무시 */ } });
     if (!APP.updateUrl) return;
@@ -1611,6 +1617,58 @@ function sheetVersion() {
     });
   });
 }
+
+/* ───── 내 데이터 백업: 계산 기록·프리셋·통화 목록을 파일 하나로 저장하고 불러오기 (모든 앱 같은 방식) ───── */
+const BK = { msg: '', busy: false, pending: null };
+function bkHTML() {
+  const p = BK.pending, d = p && p.at ? new Date(p.at) : null;
+  return (p ? `<p class="hint">${d && !isNaN(d) ? `${d.getMonth() + 1}월 ${d.getDate()}일 ` : ''}백업 (v${esc(p.version || '?')})을 불러오면 지금 기록·프리셋이 백업 내용으로 바뀌어요.</p>
+      <div class="btns"><button class="btn sec" type="button" data-bk="cancel">취소</button><button class="btn pri" type="button" data-bk="apply"${BK.busy ? ' disabled' : ''}>불러오기</button></div>`
+    : `<p class="hint">폰을 바꾸거나 앱을 지우기 전에 파일로 저장해 두세요.</p>
+      <div class="btns"><button class="btn sec" type="button" data-bk="save"${BK.busy ? ' disabled' : ''}>백업 파일로 저장</button><button class="btn sec" type="button" data-bk="open"${BK.busy ? ' disabled' : ''}>백업 불러오기</button></div>`)
+    + (BK.msg ? `<p class="hint" role="status">${esc(BK.msg)}</p>` : '');
+}
+function bkMount(sh) {
+  const box = $('#bkBox', sh || el.sheet); if (!box) return;
+  box.innerHTML = bkHTML();
+  box.querySelectorAll('[data-bk]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.bk;
+    if (k === 'save') bkSave(); else if (k === 'open') bkOpen(); else if (k === 'apply') bkApply(); else { BK.pending = null; bkSet(''); }
+  }));
+}
+function bkSet(m, busy) { BK.msg = m; BK.busy = !!busy; if (sheetOpen) bkMount(); }
+function bkSave() {
+  flush();
+  const d = new Date(), p = n => String(n).padStart(2, '0'), name = `${APP.name}-백업-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
+  let data = null; try { data = localStorage.getItem(STORE); } catch (e) { /* 무시 */ }
+  const text = JSON.stringify({ app: APP.name, repo: 'dlsdml99-create/ganeum', version: APP.label.replace(/^v/, ''), at: d.toISOString(), ls: { [STORE]: data } });
+  if (NATIVE && NATIVE.backupSave) { bkSet('저장할 곳을 골라 주세요 (내 파일·드라이브 등)', true); NATIVE.backupSave(name, text); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); bkDone(true);
+}
+function bkDone(ok, why) { bkSet(ok ? '백업 파일을 저장했어요. 새 폰에서는 이 화면의 "백업 불러오기"로 넣으면 돼요.' : why === 'cancel' ? '' : '백업 파일을 저장하지 못했어요. 다시 해 주세요.'); }
+function bkOpen() {
+  BK.pending = null;
+  if (NATIVE && NATIVE.backupOpen) { bkSet('백업 파일을 골라 주세요', true); NATIVE.backupOpen(); return; }
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/json,text/plain,application/octet-stream,.json'; inp.hidden = true; document.body.appendChild(inp);
+  inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; inp.remove(); if (!f) return; const r = new FileReader(); r.onload = () => bkOpened(String(r.result)); r.onerror = () => bkOpened(null); r.readAsText(f); });
+  inp.click();
+}
+function bkOpened(text) {
+  if (text == null) { bkSet(''); return; }
+  let o = null; try { o = JSON.parse(text); } catch (e) { o = null; }
+  if (!o || !o.ls || typeof o.ls !== 'object') { bkSet('이 파일은 백업 파일이 아니에요.'); return; }
+  if (o.repo !== 'dlsdml99-create/ganeum' || typeof o.ls[STORE] !== 'string') { bkSet(`이 파일은 ${o.app ? `“${o.app}” 앱의` : '다른 앱의'} 백업이에요. 가늠 백업 파일을 골라 주세요.`); return; }
+  try { JSON.parse(o.ls[STORE]); } catch (e) { bkSet('백업 파일이 망가져서 불러올 수 없어요.'); return; }
+  BK.pending = o; bkSet('');
+}
+function bkApply() {
+  const o = BK.pending; if (!o) return;
+  try { localStorage.setItem(STORE, o.ls[STORE]); } catch (e) { BK.pending = null; bkSet('저장 공간이 부족해서 불러오지 못했어요.'); return; }
+  bkLock = true; bkSet('다 불러왔어요! 잠깐 뒤 다시 열려요.', true);
+  setTimeout(() => { try { location.reload(); } catch (e) { /* 무시 */ } }, 700);
+}
+window.AppInfo = Object.assign(window.AppInfo || {}, { backupDone: (ok, why) => bkDone(!!ok, why), backupOpened: t => bkOpened(t) });
 
 /* ───── 알림·복사 ───── */
 let toastTimer = 0;
