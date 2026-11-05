@@ -1,3 +1,4 @@
+<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' file: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: file: https:; media-src 'self' data: blob:; connect-src 'self' https: data: blob:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>가늠 계산기</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -331,6 +332,7 @@ const NATIVE = typeof window.Android === 'object' && window.Android ? window.And
 const APP = { name: '가늠', version: '1.1.0', label: 'v1.1', updateUrl: '', preview: !NATIVE && !/github\.io$/.test(location.hostname), shareBase: 'https://dlsdml99-create.github.io/ganeum/' };
 try { const v = NATIVE && NATIVE.version(); if (v && /^\d+(\.\d+)*$/.test(v)) { APP.version = v; APP.label = 'v' + v; } } catch (e) { /* 웹 */ }
 const NOTES = [
+  { v: 'v1.9', d: '2026.11.05', items: ['보안 강화: 앱 화면이 허락된 곳 말고는 스크립트를 불러오지 못하게 막고, 폰의 다른 파일을 읽지 못하게 하고, 업데이트 파일은 이 앱 저장소 주소에서만 받아요'] },
   { v: 'v1.8', d: '2026.11.05', items: ['프리셋 묶음 「한국 단위」: 근↔g(고기 600g·채소 375g), 돈↔g, cm→인치, km→마일, kg→파운드', '왼쪽 아래 버전 → 화면: 밝게·어둡게 직접 고르기, 글씨 크게·아주 크게'] },
   { v: 'v1.7', d: '2026.11.05', items: ['내 데이터 백업: 계산 기록·프리셋·통화 목록을 파일로 저장했다가 새 폰에서 불러오기 (왼쪽 아래 버전)'] },
   { v: 'v1.6', d: '2026.11.01', items: ['환율 탭에도 복사 버튼: "100 USD = 133,804원 = 15,788 JPY"처럼 한 번에 복사'] },
