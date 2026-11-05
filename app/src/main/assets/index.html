@@ -53,6 +53,8 @@ input{font:inherit;color:inherit;margin:0}
 .hist::-webkit-scrollbar{display:none}
 .hist-in{min-height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;gap:1px;padding-top:30px}
 .hrow{display:flex;flex-wrap:wrap;justify-content:flex-end;column-gap:6px;max-width:100%;padding:4px 0;font-family:var(--num);font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink-3);text-align:right;overflow-wrap:anywhere}
+.vset{display:flex;flex-direction:column;gap:8px}.vrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.vrow>span{min-width:36px;font-size:13px;color:var(--ink-2)}
+.vrow .chip[aria-pressed="true"]{background:var(--jade);color:#fff;border-color:transparent}
 .hrow b{font-weight:500;color:var(--ink-2)}
 .hclear{align-self:flex-start;padding:4px 0;font-size:12px;color:var(--ink-3)}
 .hclear.armed{color:var(--brick);font-weight:700}
@@ -329,6 +331,7 @@ const NATIVE = typeof window.Android === 'object' && window.Android ? window.And
 const APP = { name: '가늠', version: '1.1.0', label: 'v1.1', updateUrl: '', preview: !NATIVE && !/github\.io$/.test(location.hostname), shareBase: 'https://dlsdml99-create.github.io/ganeum/' };
 try { const v = NATIVE && NATIVE.version(); if (v && /^\d+(\.\d+)*$/.test(v)) { APP.version = v; APP.label = 'v' + v; } } catch (e) { /* 웹 */ }
 const NOTES = [
+  { v: 'v1.8', d: '2026.11.05', items: ['프리셋 묶음 「한국 단위」: 근↔g(고기 600g·채소 375g), 돈↔g, cm→인치, km→마일, kg→파운드', '왼쪽 아래 버전 → 화면: 밝게·어둡게 직접 고르기, 글씨 크게·아주 크게'] },
   { v: 'v1.7', d: '2026.11.05', items: ['내 데이터 백업: 계산 기록·프리셋·통화 목록을 파일로 저장했다가 새 폰에서 불러오기 (왼쪽 아래 버전)'] },
   { v: 'v1.6', d: '2026.11.01', items: ['환율 탭에도 복사 버튼: "100 USD = 133,804원 = 15,788 JPY"처럼 한 번에 복사'] },
   { v: 'v1.5', d: '2026.11.01', items: ['16자리가 넘는 아주 큰 수도 끝자리까지 정확하게 계산해요 (99,999,999×99,999,999 = 9,999,999,800,000,001)', '계산 기록을 꾹 누르면 그 계산을 프리셋으로 바로 저장해요'] },
@@ -756,6 +759,16 @@ const PACKS = [
     { id: 'k-oz', name: '온스 → g', f: '온스 × 28.349523' },
     { id: 'k-in', name: '인치 → cm', f: '인치 × 2.54' },
     { id: 'k-gal', name: '갤런 → L', f: '갤런 × 3.785412', note: '미국 갤런 기준' }
+  ] },
+  { id: 'unit', name: '한국 단위', desc: '근·돈·평·인치를 g·㎡·cm로, 거꾸로도', items: [
+    { id: 'k-geun', name: '근 → g (고기)', f: '근 × 600', note: '고기 한 근 = 600g' },
+    { id: 'k-g2geun', name: 'g → 근 (고기)', f: '그램 ÷ 600' },
+    { id: 'k-geunv', name: '근 → g (채소·과일)', f: '근 × 375', note: '채소·과일 한 근 = 375g' },
+    { id: 'k-don', name: '돈 → g (금)', f: '돈 × 3.75', note: '금 한 돈 = 3.75g' },
+    { id: 'k-g2don', name: 'g → 돈 (금)', f: '그램 ÷ 3.75' },
+    { id: 'k-cm2in', name: 'cm → 인치', f: '센티 ÷ 2.54', note: 'TV·모니터·바지 사이즈' },
+    { id: 'k-km2mi', name: 'km → 마일', f: '킬로미터 ÷ 1.609344' },
+    { id: 'k-kg2lb', name: 'kg → 파운드', f: '킬로그램 ÷ 0.45359237' }
   ] },
   { id: 'shop', name: '쇼핑', desc: '개당 가격, 할인에 추가 할인', items: [
     { id: 'k-each', name: '개당 가격', f: '가격 ÷ 개수' },
@@ -1599,13 +1612,15 @@ window.onSharedText = t => { if (decPreset(String(t || ''))) sheetImport(String(
 function sheetVersion() {
   openSheet(`<div class="grab"></div>
     <div class="shead"><div><h2>${APP.name}<span class="vtag${hasNew() ? ' up' : ''}">${APP.label}</span></h2><p class="hint" id="updMsg">${NATIVE ? (hasNew() ? `새 버전 <b class="upv">v1.${LATEST.v}</b>이 나왔어요.` : LATEST.v ? '지금 쓰는 버전이 최신이에요.' : '새 버전이 나오면 앱을 열 때 알려드려요.') : APP.preview ? '미리보기 버전이에요. 설치용 앱에서는 새 버전이 나오면 여기서 바로 받을 수 있어요.' : '웹 버전이에요. 안드로이드 앱은 다운로드 페이지에서 받을 수 있어요.'}</p>${NATIVE ? '<button class="btn sec sm" type="button" id="updBtn" style="margin-top:10px">새 버전 확인</button>' : ''}</div>${CLOSE}</div>
+    <p class="lbl">화면</p>
+    <div class="vset" id="vset">${viewHTML()}</div>
     <p class="lbl">업데이트 내용</p>
     <ul class="notes">${NOTES.map(n => `<li><b>${esc(n.v)}</b><span>${esc(n.d)}</span><ul>${n.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul></li>`).join('')}</ul>
     <p class="lbl">내 데이터 백업</p>
     <div id="bkBox">${bkHTML()}</div>
     <p class="lbl">개인정보</p>
     <p class="hint">계산 기록과 프리셋은 이 기기에만 저장돼요. 백업 파일은 내가 고른 곳에만 저장되고 인터넷으로 보내지 않아요. 인터넷은 환율을 받고 새 버전을 확인할 때만 써요.</p>`, sh => {
-    bkMount(sh);
+    bkMount(sh); viewMount(sh);
     const ub = $('#updBtn', sh);
     if (ub) ub.addEventListener('click', () => { try { NATIVE.openUpdate(); } catch (e) { /* 무시 */ } });
     if (!APP.updateUrl) return;
@@ -1617,6 +1632,31 @@ function sheetVersion() {
     });
   });
 }
+
+
+/* ───── 화면: 밝게·어둡게, 글씨 크기 (이 기기에만 저장) ───── */
+const VIEW_KEY = 'ganeum-view';
+const VIEW = (() => { try { const v = JSON.parse(localStorage.getItem(VIEW_KEY) || '{}'); return { theme: ['auto', 'light', 'dark'].includes(v.theme) ? v.theme : 'auto', size: [1, 1.1, 1.2].includes(v.size) ? v.size : 1 }; } catch (e) { return { theme: 'auto', size: 1 }; } })();
+function viewApply() {
+  const r = document.documentElement;
+  if (VIEW.theme === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', VIEW.theme);
+  document.body.style.zoom = VIEW.size === 1 ? '' : String(VIEW.size);
+}
+function viewHTML() {
+  const b = (k, v, t) => `<button class="chip" type="button" data-vk="${k}" data-vv="${v}" aria-pressed="${String(VIEW[k]) === String(v)}">${t}</button>`;
+  return `<div class="vrow"><span>테마</span>${b('theme', 'auto', '폰 설정대로')}${b('theme', 'light', '밝게')}${b('theme', 'dark', '어둡게')}</div>
+    <div class="vrow"><span>글씨</span>${b('size', 1, '보통')}${b('size', 1.1, '크게')}${b('size', 1.2, '아주 크게')}</div>`;
+}
+function viewMount(sh) {
+  const box = $('#vset', sh); if (!box) return;
+  box.addEventListener('click', e => {
+    const t = e.target.closest('[data-vk]'); if (!t) return;
+    VIEW[t.dataset.vk] = t.dataset.vk === 'size' ? +t.dataset.vv : t.dataset.vv;
+    try { localStorage.setItem(VIEW_KEY, JSON.stringify(VIEW)); } catch (er) { /* 무시 */ }
+    viewApply(); box.innerHTML = viewHTML();
+  });
+}
+viewApply();
 
 /* ───── 내 데이터 백업: 계산 기록·프리셋·통화 목록을 파일 하나로 저장하고 불러오기 (모든 앱 같은 방식) ───── */
 const BK = { msg: '', busy: false, pending: null };
