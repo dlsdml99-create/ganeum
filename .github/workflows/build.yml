@@ -50,7 +50,9 @@ jobs:
       - name: 다운로드 페이지 올리기 (gh-pages)
         run: |
           N=${{ github.run_number }}
-          cp app/src/main/assets/index.html site/app.html
+          # 아이폰 홈 화면에 추가했을 때 가늠 아이콘·이름이 보이게
+          sed 's#<meta charset="utf-8">#<meta charset="utf-8"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-title" content="가늠"><meta name="apple-mobile-web-app-capable" content="yes">#' app/src/main/assets/index.html > site/app.html
+          grep -q apple-touch-icon site/app.html
           sed -i "s/__N__/$N/g; s/__MB__/$MB/g" site/index.html
           cd site
           git init -q -b gh-pages
