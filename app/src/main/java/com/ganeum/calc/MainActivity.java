@@ -45,6 +45,7 @@ public class MainActivity extends Activity {
     private boolean pageReady;
     private final List<String> pendingJs = new ArrayList<>();
     private long latestVersion = 0;
+    private volatile boolean shownUpdate = false;
     private String latestUrl = null;
 
     @Override
@@ -65,6 +66,9 @@ public class MainActivity extends Activity {
         s.setSupportZoom(false);
         s.setAllowContentAccess(false);
         s.setGeolocationEnabled(false);
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        s.setSupportMultipleWindows(false);
+        s.setJavaScriptCanOpenWindowsAutomatically(false);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         web.addJavascriptInterface(new Bridge(), "Android");
         web.setWebViewClient(new WebViewClient() {
@@ -79,8 +83,8 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 Uri u = req.getUrl();
                 if ("file".equals(u.getScheme())) return !String.valueOf(u.getPath()).startsWith("/android_asset/");
-                // 화면 안의 링크(환율 출처 등)는 폰 브라우저로 연다
-                try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) { }
+                // 화면 안의 링크(환율 출처 등)는 허락한 https 주소만 폰 브라우저로 연다
+                openSafe(u);
                 return true;
             }
         });
@@ -88,6 +92,24 @@ public class MainActivity extends Activity {
         web.loadUrl("file:///android_asset/index.html");
         checkUpdate();
         takeIntent(getIntent());
+    }
+
+    // 바깥으로 여는 주소: https + 정해 둔 곳만 (그 밖의 주소 형식·사이트는 열지 않음)
+    private static final String[][] LINK_OK = {
+        {"www.exchangerate-api.com", ""}, {"exchangerate-api.com", ""},
+        {"github.com", "/fawazahmed0/exchange-api"}, {"github.com", "/dlsdml99-create/ganeum"},
+        {"dlsdml99-create.github.io", "/ganeum/"}
+    };
+    static boolean linkAllowed(Uri u) {
+        if (u == null || !"https".equals(u.getScheme()) || u.getUserInfo() != null || (u.getPort() != -1 && u.getPort() != 443)) return false;
+        String h = u.getHost(), path = u.getPath() == null ? "/" : u.getPath();
+        if (path.contains("..")) return false;
+        for (String[] a : LINK_OK) if (a[0].equals(h) && (a[1].isEmpty() || path.equals(a[1]) || path.startsWith(a[1].endsWith("/") ? a[1] : a[1] + "/"))) return true;
+        return false;
+    }
+    private void openSafe(Uri u) {
+        if (!linkAllowed(u)) return;
+        try { startActivity(new Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE)); } catch (Exception ignored) { }
     }
 
     // 다크 모드에 맞춰 위·아래 막대 색과 아이콘 색을 맞춘다
@@ -237,7 +259,7 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 try {
                     Intent i = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text);
-                    startActivity(Intent.createChooser(i, "프리셋 보내기"));
+                    startActivity(Intent.createChooser(i, "계산식 보내기"));
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "보낼 앱을 찾지 못했어요", Toast.LENGTH_SHORT).show();
                 }
@@ -256,11 +278,16 @@ public class MainActivity extends Activity {
             }).start();
         }
 
+        /** '새 버전 확인' 버튼: GitHub에서 다시 확인하고 결과를 화면에 알려 줌 */
+        @JavascriptInterface
+        public void checkUpdate() { MainActivity.this.checkUpdate(); }
+
         @JavascriptInterface
         public void openUpdate() {
             runOnUiThread(() -> {
                 if (latestUrl != null && latestVersion > currentVersion()) showUpdate(latestVersion);
-                else Toast.makeText(MainActivity.this, "지금 최신 버전이에요", Toast.LENGTH_SHORT).show();
+                else if (latestVersion > 0) Toast.makeText(MainActivity.this, "지금 쓰는 버전이 최신이에요", Toast.LENGTH_SHORT).show();
+                else MainActivity.this.checkUpdate();
             });
         }
     }
@@ -297,10 +324,10 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             try {
                 String body = get(RELEASE_API, 8000);
-                if (body == null) return;
+                if (body == null) { js("window.onLatestFail&&window.onLatestFail()"); return; }
                 JSONObject o = new JSONObject(body);
                 String digits = o.optString("tag_name", "").replaceAll("[^0-9]", "");
-                if (digits.isEmpty()) return;
+                if (digits.isEmpty()) { js("window.onLatestFail&&window.onLatestFail()"); return; }
                 long latest = Long.parseLong(digits);
                 String url = null;
                 JSONArray assets = o.optJSONArray("assets");
@@ -313,21 +340,24 @@ public class MainActivity extends Activity {
                 latestVersion = latest;
                 latestUrl = url;
                 js("window.onLatest&&window.onLatest(" + latest + "," + currentVersion() + ")");
-                if (url != null && latest > currentVersion()) runOnUiThread(() -> showUpdate(latest));
-            } catch (Exception ignored) { }
+                if (url != null && latest > currentVersion() && !shownUpdate) { shownUpdate = true; runOnUiThread(() -> showUpdate(latest)); }
+            } catch (Exception e) { js("window.onLatestFail&&window.onLatestFail()"); }
         }).start();
     }
 
     private void showUpdate(long latest) {
         if (isFinishing() || latestUrl == null) return;
         new AlertDialog.Builder(this)
-            .setTitle("새 버전이 있어요")
-            .setMessage("v1." + latest + " 업데이트가 나왔어요.\n'업데이트'를 누르면 파일이 받아져요. 다 받으면 파일을 눌러 설치하세요. 계산 기록과 프리셋은 그대로 남아요.")
+            .setTitle("새 버전이 나왔어요")
+            .setMessage("v1." + latest + " 업데이트가 나왔어요.\n'업데이트'를 누르면 파일이 받아져요. 다 받으면 파일을 눌러 설치해 주세요. 계산 기록과 계산식은 그대로 남아요.")
             .setPositiveButton("업데이트", (d, w) -> {
-                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(latestUrl))); } catch (Exception ignored) { }
+                Uri du = Uri.parse(latestUrl);
+                if ("https".equals(du.getScheme()) && "github.com".equals(du.getHost()) && String.valueOf(du.getPath()).startsWith("/dlsdml99-create/ganeum/releases/download/")) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, du)); } catch (Exception ignored) { }
+                }
             })
             .setNeutralButton("새 기능 보기", (d, w) -> {
-                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(PAGE + "#updates"))); } catch (Exception ignored) { }
+                openSafe(Uri.parse(PAGE + "#updates"));
             })
             .setNegativeButton("나중에", null)
             .show();
