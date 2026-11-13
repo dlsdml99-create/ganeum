@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>가늠 - 환율도, 자주 쓰는 계산도 한 번에</title>
+<meta name="description" content="원화 단위와 환율이 바로 보이는 계산기. 부가세·할인·N빵은 버튼 한 번.">
+<meta property="og:title" content="가늠 계산기">
+<meta property="og:description" content="환율도, 자주 쓰는 계산도 한 번에. 안드로이드 무료 앱">
+<meta property="og:image" content="https://dlsdml99-create.github.io/ganeum/icon-512.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--paper:#edf1ee;--sheet:#fff;--ink:#13201a;--ink2:#55655d;--ink3:#85938c;--line:#d5ded9;--jade:#13704f;--jade-soft:#d7e8de;--jade-ink:#0c5a3f;--gold:#946a06;--gold-soft:#f2e5c2;
+--ui:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#0e1512;--sheet:#18211d;--ink:#e3ebe6;--ink2:#9cada4;--ink3:#6b7a73;--line:#26322c;--jade:#3aae80;--jade-soft:#19302a;--jade-ink:#86dbb5;--gold:#e1b54a;--gold-soft:#342a10;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 var(--ui);word-break:keep-all}
+.wrap{max-width:620px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) 48px max(18px,env(safe-area-inset-left))}
+.hero{display:grid;grid-template-columns:88px 1fr;gap:18px;align-items:center}
+.hero img{width:88px;height:88px;border-radius:22px;box-shadow:0 8px 24px rgba(19,112,79,.25)}
+h1{margin:0;font-size:30px;letter-spacing:-.02em}
+.tag{margin:2px 0 0;color:var(--ink2);font-size:15.5px}
+.dl{display:flex;align-items:center;justify-content:center;gap:10px;margin:26px 0 8px;height:58px;border-radius:16px;background:var(--jade);color:#fff;font-size:18px;font-weight:800;text-decoration:none}
+@media (prefers-color-scheme:dark){.dl{color:#04150e}}
+.dl svg{width:22px;height:22px}
+.meta{margin:0;text-align:center;font-size:13px;color:var(--ink3)}
+.web{display:block;margin:10px 0 0;text-align:center;font-size:14px;color:var(--jade-ink)}
+h2{margin:40px 0 10px;font-size:13px;letter-spacing:.08em;color:var(--ink2)}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:18px;padding:6px 18px}
+.f{display:grid;grid-template-columns:7.5em 1fr;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.f:last-child{border-bottom:0}
+.f b{font-size:15px}
+.f span{color:var(--ink2);font-size:14px}
+code{font-family:inherit;background:var(--jade-soft);color:var(--jade-ink);padding:1px 6px;border-radius:6px;font-weight:700}
+.upd{padding:14px 0;border-bottom:1px solid var(--line)}
+.upd:last-child{border-bottom:0}
+.upd b{font-size:16px}.upd small{margin-left:8px;color:var(--ink3)}
+.upd ul{margin:6px 0 0;padding-left:20px;color:var(--ink2);font-size:14px}
+ol{margin:0;padding:14px 0 14px 22px;font-size:14px;color:var(--ink2)}
+ol li{margin:4px 0}
+.safe{margin-top:12px;padding:14px 16px;border-radius:14px;background:var(--gold-soft);font-size:13.5px;color:var(--ink)}
+@media (max-width:420px){.f{grid-template-columns:1fr;gap:2px}.hero{grid-template-columns:72px 1fr}.hero img{width:72px;height:72px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero">
+    <img src="icon-512.png" alt="가늠 아이콘">
+    <div><h1>가늠</h1><p class="tag">환율도, 자주 쓰는 계산도 한 번에</p></div>
+  </div>
+  <a class="dl" href="https://github.com/dlsdml99-create/ganeum/releases/download/v11/ganeum.apk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>앱 다운로드</a>
+  <p class="meta">v1.11 · 0.1MB · 안드로이드 7.0 이상 · 무료 · 광고 없음</p>
+  <a class="web" href="guide.html">📖 사용 설명서 보기</a>
+  <a class="web" href="app.html">아이폰·PC에서는 웹으로 바로 써보기 →</a>
+
+  <h2>소개</h2>
+  <div class="card">
+    <div class="f"><b>원화·환율 자동</b><span>결과 아래에 <code>4만 3,700원</code> 같은 한글 단위와 <code>≈ 32.66 USD</code> 환율이 바로 나와요</span></div>
+    <div class="f"><b>계산 칩</b><span>부가세 포함·빼기, 할인, N빵, 평→제곱미터를 버튼 한 번으로 계산해요</span></div>
+    <div class="f"><b>자동 칩</b><span>같은 계산을 3번 하면 자주 쓰는 계산으로 칩에 저절로 올라와요. 계산 기록을 길게 누르면 바로 내 계산식이 돼요</span></div>
+    <div class="f"><b>큰 수도 정확하게</b><span>16자리가 넘는 곱셈도 끝자리까지 정확하게 계산해요</span></div>
+    <div class="f"><b>내 계산식</b><span><code>가격 × 1.1 + 배송비</code>처럼 쓰면 입력칸이 알아서 생기고, 미리 채운 값으로 바로 계산해요</span></div>
+    <div class="f"><b>계산식 묶음</b><span>여행·쇼핑·부동산·금융·직장인 계산식을 묶음째 한 번에 넣어요</span></div>
+    <div class="f"><b>계산식 공유</b><span>내가 만든 계산식을 카톡으로 보내면 받은 사람이 눌러서 바로 넣어요</span></div>
+    <div class="f"><b>식 고치기</b><span>식 속 숫자를 누르면 그 숫자만 고쳐요. 괄호 ( ) 키도 있어요</span></div>
+    <div class="f"><b>환율 49개 통화</b><span>아무 통화나 눌러 금액을 넣으면 나머지가 바로 바뀌어요. 인터넷이 없어도 저장된 환율로 계산하고, 해외에 가면 그 나라 통화를 맨 위에 넣어 줘요</span></div>
+    <div class="f"><b>찾기</b><span>계산 기록·계산식·통화를 여러 단어로 찾아요</span></div>
+    <div class="f"><b>안전한 백업</b><span>기록을 파일로 저장할 때 비밀번호로 잠글 수 있어요 (8글자 이상)</span></div>
+    <div class="f"><b>예시로 둘러보기</b><span>처음 열면 빈 화면이에요. 어떻게 쓰는지 궁금하면 예시를 눌러 봐요(저장되지 않아요)</span></div>
+  </div>
+
+  <h2 id="updates">업데이트 내용</h2>
+  <div class="card">
+    <div class="upd"><b>v1.11</b><small>2026.11.13</small>
+      <ul><li>백업 비밀번호를 더 튼튼하게: 이제 8글자 이상으로 넣어요. 숫자만 넣으면 한 번 더 알려 드려요. 전에 6글자로 잠근 백업도 그대로 열려요</li><li>잠근 백업 파일을 풀기 훨씬 어렵게 바꿨어요 (다른 앱과 같은 방식)</li><li>해외에서 처음 설치해도 그 나라 통화가 환율 맨 위에 올라와요 (한국에서는 그대로예요)</li><li>아이폰 웹앱이 한 번 열고 나면 인터넷이 없어도 열려요. 환율은 마지막에 받은 값으로 계산해요</li><li>저장하지 못했을 때 안내를 더 정확하게 바꿨어요 (폰 사진을 지우라는 뜻이 아니에요). 다시 실패하면 다시 알려 드려요</li><li>"테마"를 "화면 색"으로, 글자 크기 "아주 크게"를 조금 더 크게, 괄호 ( ) 키와 계산 기록 줄을 누르기 쉽게 키웠어요</li><li>다운로드 페이지가 바깥 사이트 그림을 불러오지 않게 했어요</li></ul></div>
+    <div class="upd"><b>v1.10</b><small>2026.11.12</small>
+      <ul><li>백업 파일을 비밀번호로 잠글 수 있어요 (선택)</li><li>보안 강화: 정해진 파일 말고는 화면에서 실행되지 않게 막고, 인터넷은 환율과 새 버전 확인에만 써요. 바깥 링크는 정해진 안전한 주소만 열고, 폰 자동 백업에서도 빠져요</li><li>찾기: 계산 기록·자주 쓰는 계산·통화 고르기에서 여러 단어로 찾아요</li><li>환율 탭에 최근 환산 기록이 생겼고, 해외에 가면 그 나라 통화를 맨 위에 넣어 드려요</li><li>처음 쓰는 분을 위한 "예시로 둘러보기" (저장되지 않아요)</li><li>쉬운 말로: 프리셋 → 자주 쓰는 계산·계산식, 편집 → 고치기, 삭제 → 지우기. 기본 계산식과 내가 넣은 계산식을 나눠 보여요</li><li>회색 글자를 더 진하게, 작은 버튼을 더 크게. 버전 정보 창을 다른 앱과 같은 순서·글자 크기로 맞췄어요</li><li>아이폰 웹앱 화면이 아주 작게 보이던 문제와 버전 번호가 v1.1로 보이던 문제를 고쳤어요. 웹에서도 새 버전 확인이 돼요</li><li>0으로 나눈 뒤 숫자를 누르면 새 계산으로 시작해요. 저장 공간이 부족하면 알려 드려요</li></ul></div>
+    <div class="upd"><b>v1.9</b><small>2026.11.05</small>
+      <ul><li>보안 강화: 앱 화면이 허락된 곳 말고는 스크립트를 불러오지 못하게 막고, 폰의 다른 파일을 읽지 못하게 하고, 업데이트 파일은 이 앱 저장소 주소에서만 받아요</li></ul></div>
+    <div class="upd"><b>v1.8</b><small>2026.11.05</small>
+      <ul><li>계산식 묶음 「한국 단위」: 근↔g(고기·채소), 돈↔g, cm→인치, km→마일, kg→파운드</li><li>왼쪽 아래 버전 → 화면: 밝게·어둡게 직접 고르기, 글자 크게·아주 크게</li></ul></div>
+    <div class="upd"><b>v1.7</b><small>2026.11.05</small>
+      <ul><li>내 데이터 백업: 기록·계산식을 파일로 저장했다가 새 폰에서 불러오기</li></ul></div>
+    <div class="upd"><b>v1.6</b><small>2026.11.01</small>
+      <ul><li>환율 탭에도 복사 버튼: 바꾼 금액을 한 번에 복사</li></ul></div>
+    <div class="upd"><b>v1.5</b><small>2026.11.01</small>
+      <ul><li>16자리가 넘는 아주 큰 수도 끝자리까지 정확하게 계산해요</li><li>계산 기록을 길게 누르면 그 계산을 계산식으로 바로 저장해요</li></ul></div>
+    <div class="upd"><b>v1.4</b><small>2026.11.01</small>
+      <ul><li>새 버전이 나오면 왼쪽 아래 버전 글자가 노란색으로 바뀌어요</li><li>버전 정보 창을 다른 앱들과 같은 모양으로 맞췄어요</li></ul></div>
+    <div class="upd"><b>v1.3</b><small>2026.11.01</small>
+      <ul><li>처음 열 때 예시 숫자 없이 빈 화면으로 시작</li></ul></div>
+    <div class="upd"><b>v1.2</b><small>2026.11.01</small>
+      <ul><li>식 속 숫자 고치기, 괄호 키</li><li>계산식 묶음 5가지: 여행·쇼핑·부동산·금융·직장인, 계산식 공유</li></ul></div>
+    <div class="upd"><b>v1.0</b><small>2026.10.31 · 첫 버전</small>
+      <ul><li>계산기, 환율(49개 통화), 자주 쓰는 계산식</li><li>같은 계산을 3번 하면 자주 쓰는 계산으로 자동 추천</li><li>환율 자동 업데이트, 인터넷이 없으면 저장된 환율로 계산</li></ul></div>
+  </div>
+
+  <h2>설치하는 법</h2>
+  <div class="card"><ol>
+    <li><b>앱 다운로드</b>를 눌러 <code>ganeum.apk</code>를 받아요</li>
+    <li>다 받으면 알림이나 '내 파일 → 다운로드'에서 파일을 눌러요</li>
+    <li>"출처를 알 수 없는 앱" 안내가 나오면 <b>이 출처 허용</b>을 켜고 <b>설치</b>를 눌러요</li>
+    <li>Play 프로텍트 창이 뜨면 <b>세부정보 더보기 → 무시하고 설치</b> (스토어 밖 앱이라 나오는 안내예요)</li>
+    <li>새 버전이 나오면 앱을 열 때 알려 줘요. '업데이트'를 누르고 받은 파일을 설치하면 기록은 그대로 남아요</li>
+  </ol></div>
+  <p class="safe">권한은 인터넷 하나뿐이에요(환율 받기·새 버전 확인). 계산 기록과 계산식은 폰에만 저장되고 어디로도 보내지 않아요. 모든 코드는 <a href="https://github.com/dlsdml99-create/ganeum" style="color:inherit">GitHub</a>에 공개돼 있어요.</p>
+</main>
+</body>
+</html>

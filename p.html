@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>가늠 계산식 받기</title>
+<meta property="og:title" content="가늠 계산식을 받았어요">
+<meta property="og:description" content="눌러서 내 가늠 계산기에 넣기">
+<meta property="og:image" content="https://dlsdml99-create.github.io/ganeum/icon-512.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--paper:#edf1ee;--sheet:#fff;--ink:#13201a;--ink2:#55655d;--line:#d5ded9;--jade:#13704f;--on:#fff;--jade-soft:#d7e8de;--jade-ink:#0c5a3f;--ui:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#0e1512;--sheet:#18211d;--ink:#e3ebe6;--ink2:#9cada4;--line:#26322c;--jade:#3aae80;--on:#04150e;--jade-soft:#19302a;--jade-ink:#86dbb5;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 var(--ui);word-break:keep-all}
+.wrap{max-width:480px;margin:0 auto;padding:40px max(18px,env(safe-area-inset-right)) 40px max(18px,env(safe-area-inset-left))}
+.top{display:flex;align-items:center;gap:12px;color:var(--ink2);font-weight:700}
+.top img{width:40px;height:40px;border-radius:11px}
+.card{margin-top:18px;padding:20px;border-radius:18px;background:var(--sheet);border:1px solid var(--line)}
+h1{margin:0;font-size:24px}
+.f{margin:6px 0 0;font-size:17px;color:var(--ink2);overflow-wrap:anywhere}
+.n{margin:8px 0 0;font-size:13.5px;color:var(--ink2)}
+a.b{display:flex;align-items:center;justify-content:center;height:54px;margin-top:12px;border-radius:14px;font-weight:800;text-decoration:none}
+.pri{background:var(--jade);color:var(--on)}
+.sec{border:1px solid var(--line);color:var(--ink)}
+.hint{margin-top:18px;font-size:13px;color:var(--ink2)}
+.err{color:#b3402a;font-weight:700}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><img src="icon-192.png" alt="">가늠 계산식</div>
+  <div class="card" id="card"><p class="err">계산식 링크가 올바르지 않아요. 받은 메시지의 링크를 다시 눌러 주세요.</p></div>
+  <div id="btns" hidden>
+    <a class="b pri" id="toApp" href="#">가늠 앱에 넣기</a>
+    <a class="b sec" id="toWeb" href="app.html">웹 가늠에 넣기</a>
+    <a class="b sec" href="./">가늠 앱 받기</a>
+  </div>
+  <p class="hint" id="hint" hidden>가늠 앱이 없으면 '가늠 앱 받기'로 먼저 설치한 뒤 이 링크를 다시 누르세요.</p>
+</main>
+<script src="p.js"></script>
+</body>
+</html>
