@@ -9,9 +9,22 @@ const NATIVE = typeof window.Android === 'object' && window.Android ? window.And
 const BUILD = '';
 const APP = { name: '가늠', version: '', label: '', repo: 'dlsdml99-create/ganeum', preview: !NATIVE && !/github\.io$/.test(location.hostname), shareBase: 'https://dlsdml99-create.github.io/ganeum/' };
 APP.web = !NATIVE && !APP.preview;
+/* 아이폰 웹앱: 한 번 열면 인터넷 없이도 열리게 (같은 주소의 다른 앱 저장분은 건드리지 않는 sw.js) */
+if (APP.web && 'serviceWorker' in navigator && window.isSecureContext && /\/ganeum\//.test(location.pathname)) {
+  addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => { /* 무시 */ }); });
+}
 const NOTES = [
+  { v: 'v1.11', d: '2026.11.13', items: [
+    '🔒 백업 비밀번호를 더 튼튼하게: 이제 8글자 이상으로 넣어요. 숫자만 넣으면 한 번 더 알려 드려요. 전에 6글자로 잠근 백업도 그대로 열려요',
+    '🔒 잠근 백업 파일을 풀기 훨씬 어렵게 바꿨어요 (다른 앱과 같은 방식)',
+    '✈️ 해외에서 처음 설치해도 그 나라 통화가 환율 맨 위에 올라와요 (한국에서는 그대로예요)',
+    '📶 아이폰 웹앱이 한 번 열고 나면 인터넷이 없어도 열려요. 환율은 마지막에 받은 값으로 계산해요',
+    '💬 저장하지 못했을 때 안내를 더 정확하게 바꿨어요 (폰 사진을 지우라는 뜻이 아니에요). 다시 실패하면 다시 알려 드려요',
+    '👓 "테마"를 "화면 색"으로, 글자 크기 "아주 크게"를 조금 더 크게, 괄호 ( ) 키와 계산 기록 줄을 누르기 쉽게 키웠어요',
+    '🔒 다운로드 페이지가 바깥 사이트 그림을 불러오지 않게 했어요'
+  ] },
   { v: 'v1.10', d: '2026.11.12', items: [
-    '🔒 백업 파일을 비밀번호로 잠글 수 있어요 (선택 · 6글자 이상). 잠근 백업은 비밀번호를 알아야 열려요',
+    '🔒 백업 파일을 비밀번호로 잠글 수 있어요 (선택). 잠근 백업은 비밀번호를 알아야 열려요',
     '🔒 보안 강화: 정해진 파일 말고는 화면에서 실행되지 않게 막고, 인터넷은 환율과 새 버전 확인에만 써요. 바깥 링크는 정해진 안전한 주소만 열고, 폰 자동 백업에서도 빠져요',
     '🔎 찾기: 계산 기록·자주 쓰는 계산·통화 고르기에서 여러 단어로 찾아요 (예: 부가 1.1)',
     '💱 환율 탭에 최근 환산 기록이 생겼어요. 누르면 그 금액으로 다시 계산해요. 해외에 가면 그 나라 통화를 맨 위에 넣어 드려요',
@@ -22,14 +35,14 @@ const NOTES = [
     '0으로 나눈 뒤 숫자를 누르면 새 계산으로 시작해요. 음수는 −5처럼 보여요. 저장 공간이 부족해 저장하지 못하면 알려 드려요'
   ] },
   { v: 'v1.9', d: '2026.11.05', items: ['보안 강화: 앱 화면이 허락된 곳 말고는 스크립트를 불러오지 못하게 막고, 폰의 다른 파일을 읽지 못하게 하고, 업데이트 파일은 이 앱 저장소 주소에서만 받아요'] },
-  { v: 'v1.8', d: '2026.11.05', items: ['프리셋 묶음 「한국 단위」: 근↔g(고기 600g·채소 375g), 돈↔g, cm→인치, km→마일, kg→파운드', '왼쪽 아래 버전 → 화면: 밝게·어둡게 직접 고르기, 글자 크게·아주 크게'] },
-  { v: 'v1.7', d: '2026.11.05', items: ['내 데이터 백업: 계산 기록·프리셋·통화 목록을 파일로 저장했다가 새 폰에서 불러오기 (왼쪽 아래 버전)'] },
+  { v: 'v1.8', d: '2026.11.05', items: ['계산식 묶음 「한국 단위」: 근↔g(고기 600g·채소 375g), 돈↔g, cm→인치, km→마일, kg→파운드', '왼쪽 아래 버전 → 화면: 밝게·어둡게 직접 고르기, 글자 크게·아주 크게'] },
+  { v: 'v1.7', d: '2026.11.05', items: ['내 데이터 백업: 계산 기록·계산식·통화 목록을 파일로 저장했다가 새 폰에서 불러오기 (왼쪽 아래 버전)'] },
   { v: 'v1.6', d: '2026.11.01', items: ['환율 탭에도 복사 버튼: "100 USD = 133,804원 = 15,788 JPY"처럼 한 번에 복사'] },
   { v: 'v1.5', d: '2026.11.01', items: ['16자리가 넘는 아주 큰 수도 끝자리까지 정확하게 계산해요 (99,999,999×99,999,999 = 9,999,999,800,000,001)', '계산 기록을 길게 누르면 그 계산을 계산식으로 바로 저장해요'] },
   { v: 'v1.4', d: '2026.11.01', items: ['새 버전이 나오면 왼쪽 아래 버전 글자가 노란색으로 바뀌어요', '버전 정보 창을 다른 앱들과 같은 모양으로 맞췄어요'] },
   { v: 'v1.3', d: '2026.11.01', items: ['처음 열 때 예시 숫자 없이 빈 화면으로 시작'] },
-  { v: 'v1.2', d: '2026.11.01', items: ['식 속 숫자를 눌러 그 숫자만 고치기, 결과 위 식을 눌러 다시 고치기', '괄호 ( ) 키', '프리셋 묶음 5가지: 여행·쇼핑·부동산·금융·직장인', '프리셋 공유: 카톡으로 보내면 받은 사람이 눌러서 바로 넣기'] },
-  { v: 'v1.0', d: '2026.10.31', items: ['계산기, 환율, 계산식 프리셋', '같은 계산을 3번 하면 자주 쓰는 계산으로 자동 추천', '환율 자동 업데이트, 인터넷이 없으면 저장된 환율로 계산'] }
+  { v: 'v1.2', d: '2026.11.01', items: ['식 속 숫자를 눌러 그 숫자만 고치기, 결과 위 식을 눌러 다시 고치기', '괄호 ( ) 키', '계산식 묶음 5가지: 여행·쇼핑·부동산·금융·직장인', '계산식 공유: 카톡으로 보내면 받은 사람이 눌러서 바로 넣기'] },
+  { v: 'v1.0', d: '2026.10.31', items: ['계산기, 환율, 자주 쓰는 계산식', '같은 계산을 3번 하면 자주 쓰는 계산으로 자동 추천', '환율 자동 업데이트, 인터넷이 없으면 저장된 환율로 계산'] }
 ];
 try { const v = NATIVE && NATIVE.version(); if (v && /^\d+(\.\d+)*$/.test(v)) APP.version = v; } catch (e) { /* 웹 */ }
 if (!APP.version) APP.version = /^\d+(\.\d+)*$/.test(BUILD) ? BUILD : NOTES[0].v.replace(/^v/, '');
@@ -590,11 +603,11 @@ function flush() {
   if (bkLock || DEMO) return;
   try { const c = Object.assign({}, S, { calc: Object.assign({}, S.calc, { err: undefined }) }); localStorage.setItem(STORE, JSON.stringify(c)); saveWarned = 0; } catch (e) { saveFail(); }
 }
-/* 저장 공간이 꽉 차서 저장하지 못하면 조용히 넘어가지 않고 알려 줘요 (1분에 한 번만) */
+/* 앱 저장 공간이 꽉 차서 저장하지 못하면 조용히 넘어가지 않고 알려 줘요 (다시 실패하면 30초마다 다시) */
 function saveFail() {
-  if (Date.now() - saveWarned < 60e3) return;
+  if (Date.now() - saveWarned < 30e3) return;
   saveWarned = Date.now();
-  setTimeout(() => toast('폰 저장 공간이 부족해서 저장하지 못했어요. 공간을 비운 뒤 다시 해 주세요'), 0);
+  setTimeout(() => toast('앱 저장 공간이 가득 차서 저장하지 못했어요. 오래된 계산 기록을 지우거나 백업한 뒤 정리해 주세요'), 0);
 }
 function save() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 250); }
 function changed() { save(); render(); }
@@ -970,8 +983,8 @@ function renderFX() {
   const v = edValue(fx), base = v == null ? 0 : v;
   const sc = el.fxlist.scrollTop;
   const credit = S.rates.src === 'fa'
-    ? '환율 정보 출처: <a href="https://github.com/fawazahmed0/exchange-api" target="_blank" rel="noopener">Exchange API</a>'
-    : '환율 정보 출처: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a>';
+    ? '환율 정보 출처: <a href="https://github.com/fawazahmed0/exchange-api" target="_blank" rel="noopener"><small>Exchange API</small></a>'
+    : '환율 정보 출처: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener"><small>Rates By Exchange Rate API</small></a>';
   el.fxlist.innerHTML = fx.list.map(c => {
     const info = CUR[c], on = c === fx.active;
     let amt, len;
@@ -1225,21 +1238,21 @@ function sheetPack(k) {
   });
 }
 
-/* 시간대가 바뀌어 해외로 보이면 그 나라 통화를 환율 맨 위에 (한 번만, 되돌리기 가능) */
+/* 시간대가 바뀌어 해외로 보이면 그 나라 통화를 환율 맨 위에 (한 번만, 되돌리기 가능).
+   처음 설치했을 때 이미 해외에 있어도 똑같이 해요. 한국 시간대면 그대로 둬요 */
 function tzCurrency() {
   if (DEMO) return;
   const [tz, c] = tzCode();
   if (!tz || tz === S.tz) return;
-  const first = !S.tz;
   S.tz = tz; save();
-  if (first || !c || c === 'KRW' || !hasOwn(CUR, c) || !S.rates.r[c]) return;
+  if (!c || c === 'KRW' || !hasOwn(CUR, c) || !S.rates.r[c]) return;
   const L = S.fx.list, before = L.slice(), was = S.fx.active;
   const i = L.indexOf(c);
   if (i === 0) return;
   if (i > 0) L.splice(i, 1);
   L.unshift(c);
   changed();
-  toast(`지금 있는 곳의 통화(${CUR[c][1]} ${CUR[c][0]})를 맨 위에 넣었어요`, ['되돌리기', () => { S.fx.list = before; S.fx.active = was; changed(); }]);
+  toast(`지금 있는 곳의 통화(${CUR[c][1]} ${CUR[c][0]})를 환율 맨 위에 넣었어요`, ['되돌리기', () => { S.fx.list = before; S.fx.active = was; changed(); }]);
 }
 
 /* ───── 프리셋 공유: 링크 하나에 계산식을 담는다 ───── */
@@ -1467,7 +1480,7 @@ function sheetVersion() {
 
 /* ───── 화면: 밝게·어둡게, 글자 크기 (이 기기에만 저장) ───── */
 const VIEW_KEY = 'ganeum-view';
-const VIEW = (() => { try { const v = JSON.parse(localStorage.getItem(VIEW_KEY) || '{}'); return { theme: ['auto', 'light', 'dark'].includes(v.theme) ? v.theme : 'auto', size: [1, 1.1, 1.2].includes(v.size) ? v.size : 1 }; } catch (e) { return { theme: 'auto', size: 1 }; } })();
+const VIEW = (() => { try { const v = JSON.parse(localStorage.getItem(VIEW_KEY) || '{}'); return { theme: ['auto', 'light', 'dark'].includes(v.theme) ? v.theme : 'auto', size: v.size === 1.2 ? 1.3 : [1, 1.1, 1.3].includes(v.size) ? v.size : 1 }; } catch (e) { return { theme: 'auto', size: 1 }; } })();
 function viewApply() {
   const r = document.documentElement;
   if (VIEW.theme === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', VIEW.theme);
@@ -1475,8 +1488,8 @@ function viewApply() {
 }
 function viewHTML() {
   const b = (k, v, t) => `<button class="chip" type="button" data-vk="${k}" data-vv="${v}" aria-pressed="${String(VIEW[k]) === String(v)}">${t}</button>`;
-  return `<div class="vrow"><span>테마</span>${b('theme', 'auto', '폰 설정대로')}${b('theme', 'light', '밝게')}${b('theme', 'dark', '어둡게')}</div>
-    <div class="vrow"><span>글자 크기</span>${b('size', 1, '보통')}${b('size', 1.1, '크게')}${b('size', 1.2, '아주 크게')}</div>`;
+  return `<div class="vrow"><span>화면 색</span>${b('theme', 'auto', '폰 설정 따라')}${b('theme', 'light', '밝게')}${b('theme', 'dark', '어둡게')}</div>
+    <div class="vrow"><span>글자 크기</span>${b('size', 1, '보통')}${b('size', 1.1, '크게')}${b('size', 1.3, '아주 크게')}</div>`;
 }
 function viewMount(sh) {
   const box = $('#vset', sh); if (!box) return;
@@ -1490,26 +1503,31 @@ function viewMount(sh) {
 viewApply();
 
 /* ───── 내 데이터 백업: 계산 기록·계산식·통화 목록을 파일 하나로 저장하고 불러오기 (모든 앱 같은 방식) ───── */
-/* 비밀번호 잠금(선택): 비밀번호로 만든 열쇠(PBKDF2 20만 번)로 AES-GCM 256 암호화. 비밀번호와 열쇠는 어디에도 저장하지 않아요 */
-const PW_MIN = 6;
+/* 비밀번호 잠금(선택): 비밀번호로 만든 열쇠(PBKDF2-SHA256 60만 번)로 AES-GCM 256 암호화. 비밀번호와 열쇠는 어디에도 저장하지 않아요.
+   파일에 반복 횟수를 it 칸으로 적어요. it 칸이 없는 예전 파일(v1.10)은 20만 번으로 열어요. 7개 앱 모두 같은 방식 */
+const PW_MIN = 8, PW_IT = 600000, PW_IT_OLD = 200000;
 const LOCK = (() => {
   const ok = () => !!(window.crypto && crypto.subtle && crypto.getRandomValues && window.TextEncoder && window.TextDecoder);
   const b64 = u8 => { let t = ''; for (let i = 0; i < u8.length; i += 0x8000) t += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(t); };
   const unb64 = t => Uint8Array.from(atob(String(t || '')), c => c.charCodeAt(0));
-  const key = (pw, salt) => crypto.subtle.importKey('raw', new TextEncoder().encode(String(pw)), 'PBKDF2', false, ['deriveKey'])
-    .then(k => crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' }, k, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']));
+  const key = (pw, salt, it) => crypto.subtle.importKey('raw', new TextEncoder().encode(String(pw)), 'PBKDF2', false, ['deriveKey'])
+    .then(k => crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: it, hash: 'SHA-256' }, k, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']));
   const seal = (text, pw) => {
     const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
-    return key(pw, salt).then(k => crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(text)))
-      .then(ct => ({ v: 1, s: b64(salt), i: b64(iv), d: b64(new Uint8Array(ct)) }));
+    return key(pw, salt, PW_IT).then(k => crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(text)))
+      .then(ct => ({ v: 1, it: PW_IT, s: b64(salt), i: b64(iv), d: b64(new Uint8Array(ct)) }));
   };
   const open = (o, pw) => {
     if (!o || typeof o.s !== 'string' || typeof o.i !== 'string' || typeof o.d !== 'string') return Promise.reject(new Error('bad'));
-    return key(pw, unb64(o.s)).then(k => crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(o.i) }, k, unb64(o.d))).then(pt => new TextDecoder().decode(pt));
+    const it = o.it == null ? PW_IT_OLD : o.it;
+    if (!Number.isInteger(it) || it < 100000 || it > 5000000) return Promise.reject(new Error('bad'));
+    return key(pw, unb64(o.s), it).then(k => crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(o.i) }, k, unb64(o.d))).then(pt => new TextDecoder().decode(pt));
   };
   return { ok, seal, open };
 })();
-const BK = { msg: '', busy: false, pending: null, locked: null };
+const BK = { msg: '', busy: false, pending: null, locked: null, weakOk: '' };
+/* 안내를 다시 그려도 넣은 비밀번호가 지워지지 않게 */
+function keepPw(pw) { const i = $('#bkPw', el.sheet); if (i) { i.value = pw; try { i.focus(); } catch (e) { /* 무시 */ } } }
 function bkHTML() {
   const p = BK.pending, d = p && p.at ? new Date(p.at) : null, dis = BK.busy ? ' disabled' : '';
   let h;
@@ -1519,12 +1537,12 @@ function bkHTML() {
     h = `<p class="hint">${esc((d && !isNaN(d) ? `${d.getMonth() + 1}월 ${d.getDate()}일 ` : '') + `백업 (v${p.version || '?'}${cnt})`)}을 불러오면 지금 기록과 계산식이 백업 내용으로 바뀌어요.</p>
       <div class="row"><button class="btn main" type="button" data-bk="apply"${dis}>불러오기</button><button class="btn sec" type="button" data-bk="cancel">취소</button></div>`;
   } else if (BK.locked) {
-    h = `<p class="hint">🔒 비밀번호가 걸린 백업이에요.</p>
+    h = `<p class="hint">🔒 비밀번호가 걸린 백업이에요. 저장할 때 넣은 비밀번호를 넣어 주세요.</p>
       <input class="pw" id="bkUpw" type="password" autocomplete="off" maxlength="40" placeholder="백업 비밀번호" aria-label="백업 비밀번호">
       <div class="row"><button class="btn main" type="button" data-bk="unlock"${dis}>열기</button><button class="btn sec" type="button" data-bk="cancel">취소</button></div>`;
   } else {
     h = `<p class="hint">폰을 바꾸거나 앱을 지우기 전에 파일로 저장해 두세요. 파일은 내가 고른 곳에만 저장되고 인터넷으로 보내지 않아요.</p>
-      ${LOCK.ok() ? `<input class="pw" id="bkPw" type="password" autocomplete="new-password" maxlength="40" placeholder="비밀번호 (선택 · 넣으면 이 비밀번호로 잠가요)" aria-label="백업 비밀번호 (선택, ${PW_MIN}글자 이상)">` : ''}
+      ${LOCK.ok() ? `<input class="pw" id="bkPw" type="password" autocomplete="new-password" maxlength="40" placeholder="비밀번호 (선택, ${PW_MIN}글자 이상)" aria-label="백업 비밀번호 (선택, ${PW_MIN}글자 이상). 넣으면 이 비밀번호로 잠가요">` : ''}
       <div class="row"><button class="btn sec" type="button" data-bk="save"${dis}>백업 파일로 저장</button><button class="btn sec" type="button" data-bk="open"${dis}>백업 불러오기</button></div>`;
   }
   return h + (BK.msg ? `<p class="hint" role="status">${esc(BK.msg)}</p>` : '');
@@ -1542,7 +1560,10 @@ function bkSave() {
   if (BK.busy) return;
   if (DEMO) return bkSet('예시 화면에서는 백업하지 않아요. 예시를 닫은 뒤 해 주세요.');
   const pwEl = $('#bkPw', el.sheet), pw = pwEl ? pwEl.value : '';
-  if (pw && pw.length < PW_MIN) { bkSet(`비밀번호는 ${PW_MIN}글자 이상 넣어 주세요.`); return; }
+  if (pw && pw.length < PW_MIN) { BK.weakOk = ''; bkSet(`비밀번호는 ${PW_MIN}글자 이상으로 해 주세요`); keepPw(pw); return; }
+  /* 숫자만이면 막지는 않고 한 번 더 확인 (같은 비밀번호로 한 번 더 누르면 저장) */
+  if (pw && /^\d+$/.test(pw) && BK.weakOk !== pw) { BK.weakOk = pw; bkSet('숫자만 쓰면 쉽게 풀릴 수 있어요. 글자를 섞어 주세요. 그대로 쓰려면 "백업 파일로 저장"을 한 번 더 눌러 주세요.'); keepPw(pw); return; }
+  BK.weakOk = '';
   flush();
   const d = new Date(), p = n => String(n).padStart(2, '0'), name = `${APP.name}-백업-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
   let data = null; try { data = localStorage.getItem(STORE); } catch (e) { /* 무시 */ }
@@ -1570,7 +1591,7 @@ function bkOpen() {
 function bkOpened(text) {
   if (text == null) { bkSet(''); return; }
   let o = null; try { o = JSON.parse(text); } catch (e) { o = null; }
-  if (o && o.enc === 1 && o.lock && o.repo === APP.repo) { BK.locked = o; BK.pending = null; bkSet('저장할 때 넣은 비밀번호를 넣어 주세요.'); return; }
+  if (o && o.enc === 1 && o.lock && o.repo === APP.repo) { BK.locked = o; BK.pending = null; bkSet(''); return; }
   if (!o || !o.ls || typeof o.ls !== 'object') { bkSet(o && o.enc === 1 ? '다른 앱의 백업이에요. 가늠 백업 파일을 골라 주세요.' : '이 파일은 백업 파일이 아니에요.'); return; }
   if (o.repo !== APP.repo || typeof o.ls[STORE] !== 'string') { bkSet(`이 파일은 ${o.app ? `“${String(o.app).slice(0, 20)}” 앱의` : '다른 앱의'} 백업이에요. 가늠 백업 파일을 골라 주세요.`); return; }
   let m = null; try { m = JSON.parse(o.ls[STORE]); } catch (e) { m = null; }
@@ -1886,5 +1907,5 @@ window.addEventListener('pagehide', flush);
 
 /* ───── 시작 ───── */
 render();
-setTimeout(() => { autoRefresh(); autoUpdateCheck(); if (S.tab === 'fx') tzCurrency(); }, 400);
+setTimeout(() => { autoRefresh(); autoUpdateCheck(); if (S.tab === 'fx' || !S.tz) tzCurrency(); }, 400);
 })();

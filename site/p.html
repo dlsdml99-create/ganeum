@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>가늠 계산식 받기</title>
 <meta property="og:title" content="가늠 계산식을 받았어요">
@@ -38,31 +39,6 @@ a.b{display:flex;align-items:center;justify-content:center;height:54px;margin-to
   </div>
   <p class="hint" id="hint" hidden>가늠 앱이 없으면 '가늠 앱 받기'로 먼저 설치한 뒤 이 링크를 다시 누르세요.</p>
 </main>
-<script>
-(function () {
-  var code = (location.hash || '').slice(1);
-  if (!/^[A-Za-z0-9_-]{8,3000}$/.test(code)) return;
-  var o;
-  try {
-    var b64 = code.replace(/-/g, '+').replace(/_/g, '/');
-    b64 += '='.repeat((4 - b64.length % 4) % 4);
-    var bin = atob(b64), bytes = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    o = JSON.parse(new TextDecoder().decode(bytes));
-  } catch (e) { return; }
-  if (!o || typeof o.n !== 'string' || typeof o.f !== 'string') return;
-  var card = document.getElementById('card');
-  card.textContent = '';
-  var h = document.createElement('h1'); h.textContent = o.n.slice(0, 24); card.appendChild(h);
-  var f = document.createElement('p'); f.className = 'f'; f.textContent = o.f.slice(0, 120); card.appendChild(f);
-  if (typeof o.t === 'string') { var n = document.createElement('p'); n.className = 'n'; n.textContent = o.t.slice(0, 80); card.appendChild(n); }
-  var page = location.href.split('#')[0].replace(/p\.html$/, '');
-  document.getElementById('toApp').href = 'intent://p/' + code + '#Intent;scheme=ganeum;package=com.ganeum.calc;S.browser_fallback_url=' + encodeURIComponent(page) + ';end';
-  if (!/Android/i.test(navigator.userAgent)) document.getElementById('toApp').hidden = true;
-  document.getElementById('toWeb').href = 'app.html#p=' + code;
-  document.getElementById('btns').hidden = false;
-  document.getElementById('hint').hidden = false;
-})();
-</script>
+<script src="p.js"></script>
 </body>
 </html>
